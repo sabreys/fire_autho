@@ -12,7 +12,7 @@ import 'package:sms_autofill/sms_autofill.dart';
 // You can use directly after Firebase setup. I don't have mac so I did not control on IOS.
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();  //  !!!
+  WidgetsFlutterBinding.ensureInitialized(); //  !!!
 
   runApp(ChangeNotifierProvider(
       create: (context) => AuthManager(), child: MyApp()));
@@ -32,17 +32,16 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
+  AuthManager manager =
+      AuthManager(); // Singleton class. initializing  is here.
 
-  AuthManager manager = AuthManager(); // Singleton class. initializing  is here.
-
-  MyHomePage(){
-  //  manager.setTwitterConsumerKeys("consumer_key","consumer_secret_key"); // if you will use twitter sign in. you must call this function.
+  MyHomePage() {
+    //  manager.setTwitterConsumerKeys("consumer_key","consumer_secret_key"); // if you will use twitter sign in. you must call this function.
   }
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
-
 
 class _MyHomePageState extends State<MyHomePage> {
   final mailFieldController = TextEditingController();
@@ -52,10 +51,8 @@ class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController _phoneNumberController = TextEditingController();
   final TextEditingController _smsController = TextEditingController();
 
-
   String _verificationId;
   final SmsAutoFill _autoFill = SmsAutoFill();
-
 
   @override
   void dispose() {
@@ -105,7 +102,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: buildsignInWithPhoneNumber(),
                 ),
                 buildVerifyCodeButton(),
-                kIsWeb ? Container() : buildGetNumberButton(), // detecting platform. only on mobile
+                kIsWeb
+                    ? Container()
+                    : buildGetNumberButton(), // detecting platform. only on mobile
                 SizedBox(
                   height: 20,
                 ),
@@ -119,7 +118,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 buildVerificationMailButton(),
                 buildReloadButton(),
                 buildReSignButton(),
-                SizedBox(height: 50,)
+                SizedBox(
+                  height: 50,
+                )
               ],
             ),
           ),
@@ -130,13 +131,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Padding buildVerificationInput() {
     return Padding(
-                padding: const EdgeInsets.all(40.0),
-                child: TextFormField(
-                  controller: _smsController,
-                  decoration:
-                      const InputDecoration(labelText: 'Verification code'),
-                ),
-              );
+      padding: const EdgeInsets.all(40.0),
+      child: TextFormField(
+        controller: _smsController,
+        decoration: const InputDecoration(labelText: 'Verification code'),
+      ),
+    );
   }
 
   Widget buildGetNumberButton() {
@@ -232,7 +232,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void showSnack(AuthResponse response) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text("Failed:" + response.message),
     ));
   }
@@ -306,22 +306,22 @@ class _MyHomePageState extends State<MyHomePage> {
         onPressed: () async {
           Provider.of<AuthManager>(context, listen: false).phoneCode =
               _smsController.text;
-          if (!kIsWeb){
-            AuthResponse response = await   Provider.of<AuthManager>(context, listen: false)
-                .verifyPhoneSign(context, _smsController.text);
+          if (!kIsWeb) {
+            AuthResponse response =
+                await Provider.of<AuthManager>(context, listen: false)
+                    .verifyPhoneSign(context, _smsController.text);
 
             if (response.status != Status.Successed) {
               showSnack(response);
             }
-
-          }else{
-            AuthResponse response = await  Provider.of<AuthManager>(context, listen: false).verifyPhoneSignForWeb( _smsController.text);
+          } else {
+            AuthResponse response =
+                await Provider.of<AuthManager>(context, listen: false)
+                    .verifyPhoneSignForWeb(_smsController.text);
             if (response.status != Status.Successed) {
               showSnack(response);
             }
           }
-
-
         },
       ),
     );
@@ -331,8 +331,8 @@ class _MyHomePageState extends State<MyHomePage> {
     return CustomRaisedButton(
       child: Text("Sign in With Phone Number"),
       onPressed: () async {
-        AuthResponse response = await widget.manager.signInWithPhone(
-            _phoneNumberController.text, context);
+        AuthResponse response = await widget.manager
+            .signInWithPhone(_phoneNumberController.text, context);
         if (response.status != Status.Successed) {
           showSnack(response);
         }
@@ -341,130 +341,147 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-
-
-  Widget buildResetMailSection(){
+  Widget buildResetMailSection() {
     return Container(
       width: 300,
       height: 200,
       child: Column(
         children: [
-          TextField(controller: resetFieldController, decoration:  InputDecoration(hintText: "Reset Mail"),),
-          FlatButton(onPressed: () async {
-           AuthResponse response = await   Provider.of<AuthManager>(context,listen: false).sendPasswordResetEmail(resetFieldController.text);
-           if (response.status != Status.Successed) {
-             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-               content: Text(":" + response.message),
-             ));
-           } else {
-             showSnack(response);
-           }
-          },child: Text("Send Reset Mail"),),
+          TextField(
+            controller: resetFieldController,
+            decoration: InputDecoration(hintText: "Reset Mail"),
+          ),
+          FlatButton(
+            onPressed: () async {
+              AuthResponse response =
+                  await Provider.of<AuthManager>(context, listen: false)
+                      .sendPasswordResetEmail(resetFieldController.text);
+              if (response.status != Status.Successed) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(":" + response.message),
+                ));
+              } else {
+                showSnack(response);
+              }
+            },
+            child: Text("Send Reset Mail"),
+          ),
         ],
       ),
     );
   }
 
-  Widget buildLinkMailAuth(){
-    return  CustomRaisedButton(onPressed: () async {
-      AuthResponse response = await widget.manager. linkCredentialWithEmailPass(
-          mailFieldController.text, passFieldController.text);
-      widget.manager.printAuthStats();
-      if (response.status == Status.Failed) {
-        showSnack(response);
-      }
-    }, child: Text("LinkWithEmailPass"));
+  Widget buildLinkMailAuth() {
+    return CustomRaisedButton(
+        onPressed: () async {
+          AuthResponse response = await widget.manager
+              .linkCredentialWithEmailPass(
+                  mailFieldController.text, passFieldController.text);
+          widget.manager.printAuthStats();
+          if (response.status == Status.Failed) {
+            showSnack(response);
+          }
+        },
+        child: Text("LinkWithEmailPass"));
   }
 
-  Widget buildLinkPhoneAuth(){
-    return  CustomRaisedButton(child: Text("Link With Phone"),
-    onPressed: () async {
-      AuthResponse response = await widget.manager. linkCredentialWithPhone(
-          _phoneNumberController.text, context);
-      widget.manager.printAuthStats();
-
-        showSnack(response);
-
-    },);
-  }
-
-  Widget buildVerifyLinkPhoneAuth(){
-    return  CustomRaisedButton(child: Text("Verify Link Phone "),
+  Widget buildLinkPhoneAuth() {
+    return CustomRaisedButton(
+      child: Text("Link With Phone"),
       onPressed: () async {
-        AuthResponse response = await widget.manager.verifyLinkCredentialWithPhone(
-           _smsController.text);
+        AuthResponse response = await widget.manager
+            .linkCredentialWithPhone(_phoneNumberController.text, context);
         widget.manager.printAuthStats();
 
         showSnack(response);
-
-      },);
+      },
+    );
   }
 
+  Widget buildVerifyLinkPhoneAuth() {
+    return CustomRaisedButton(
+      child: Text("Verify Link Phone "),
+      onPressed: () async {
+        AuthResponse response = await widget.manager
+            .verifyLinkCredentialWithPhone(_smsController.text);
+        widget.manager.printAuthStats();
 
-  Widget buildLinkGoogleAuth(){
-    return  CustomRaisedButton(onPressed: () async {
-      AuthResponse response = await widget.manager.linkCredentialWithGoogle();
-      widget.manager.printAuthStats();
-      if (response.status == Status.Failed) {
         showSnack(response);
-      }
-    }, child: Text("Link Google Account"));
+      },
+    );
   }
 
-  Widget buildLinkTwitterAuth(){
-    return  CustomRaisedButton(onPressed: () async {
-      AuthResponse response = await widget.manager. linkCredentialWithTwitter();
-      widget.manager.printAuthStats();
-      if (response.status == Status.Failed) {
-        showSnack(response);
-      }
-    }, child: Text("Link Twitter Account"));
+  Widget buildLinkGoogleAuth() {
+    return CustomRaisedButton(
+        onPressed: () async {
+          AuthResponse response =
+              await widget.manager.linkCredentialWithGoogle();
+          widget.manager.printAuthStats();
+          if (response.status == Status.Failed) {
+            showSnack(response);
+          }
+        },
+        child: Text("Link Google Account"));
   }
 
-
- Widget buildDeleteButton(){
-   return  CustomRaisedButton(onPressed: () async {
-     AuthResponse response = await widget.manager. deleteUser();
-     widget.manager.printAuthStats();
-     if (response.status == Status.Failed) {
-       showSnack(response);
-     }
-   }, child: Text("Delete Account"));
- }
-
-  Widget buildVerificationMailButton(){
-    return  CustomRaisedButton(onPressed: () async {
-      AuthResponse response = await widget.manager.sendEmailVerification();
-      widget.manager.printAuthStats();
-      if (response.status == Status.Failed) {
-        showSnack(response);
-      }
-    }, child: Text("Send Verification Email"));
+  Widget buildLinkTwitterAuth() {
+    return CustomRaisedButton(
+        onPressed: () async {
+          AuthResponse response =
+              await widget.manager.linkCredentialWithTwitter();
+          widget.manager.printAuthStats();
+          if (response.status == Status.Failed) {
+            showSnack(response);
+          }
+        },
+        child: Text("Link Twitter Account"));
   }
 
-
-  Widget buildReloadButton(){
-    return  CustomRaisedButton(onPressed: () async {
-      AuthResponse response = await widget.manager.reloadUser();
-      widget.manager.printAuthStats();
-      if (response.status == Status.Failed) {
-        showSnack(response);
-      }
-    }, child: Text("Reload"));
+  Widget buildDeleteButton() {
+    return CustomRaisedButton(
+        onPressed: () async {
+          AuthResponse response = await widget.manager.deleteUser();
+          widget.manager.printAuthStats();
+          if (response.status == Status.Failed) {
+            showSnack(response);
+          }
+        },
+        child: Text("Delete Account"));
   }
 
-  Widget buildReSignButton(){
-    return  CustomRaisedButton(onPressed: () async {
-      AuthResponse response = await widget.manager.reSignWithCredential();
-      widget.manager.printAuthStats();
-      if (response.status == Status.Failed) {
-        showSnack(response);
-      }
-    }, child: Text("ReSign"));
+  Widget buildVerificationMailButton() {
+    return CustomRaisedButton(
+        onPressed: () async {
+          AuthResponse response = await widget.manager.sendEmailVerification();
+          widget.manager.printAuthStats();
+          if (response.status == Status.Failed) {
+            showSnack(response);
+          }
+        },
+        child: Text("Send Verification Email"));
   }
 
+  Widget buildReloadButton() {
+    return CustomRaisedButton(
+        onPressed: () async {
+          AuthResponse response = await widget.manager.reloadUser();
+          widget.manager.printAuthStats();
+          if (response.status == Status.Failed) {
+            showSnack(response);
+          }
+        },
+        child: Text("Reload"));
+  }
 
-
-
-
+  Widget buildReSignButton() {
+    return CustomRaisedButton(
+        onPressed: () async {
+          AuthResponse response = await widget.manager.reSignWithCredential();
+          widget.manager.printAuthStats();
+          if (response.status == Status.Failed) {
+            showSnack(response);
+          }
+        },
+        child: Text("ReSign"));
+  }
 }

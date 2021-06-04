@@ -32,17 +32,29 @@ class AuthManager extends ChangeNotifier {
   String consumerKey;
   String consumerSecretKey;
 
+  bool _initialized = false;
+
   factory AuthManager() {
     return _AuthManager;
   }
 
   AuthManager._internal() {
-    Firebase.initializeApp().whenComplete(() {
-      auth = FirebaseAuth.instance;
-      listenUser();
-      notifyListeners();
-    });
   }
+
+  Future<void> ensureInitialized() async {
+    if(!_initialized){
+      print("AuthManager initializing...");
+      await Firebase.initializeApp().whenComplete(() {
+        auth = FirebaseAuth.instance;
+        user= FirebaseAuth.instance.currentUser;
+        listenUser();
+        notifyListeners();
+        _initialized = true;
+        print("AuthManager initialized.");
+      });
+    }
+  }
+
 
   Future<void> setPersistence(Persistence persistence) async {
     await FirebaseAuth.instance.setPersistence(persistence);
@@ -66,7 +78,7 @@ class AuthManager extends ChangeNotifier {
     FirebaseAuthException errorEx;
 
     UserCredential userCredential =
-        await FirebaseAuth.instance.signInAnonymously().catchError((error) {
+    await FirebaseAuth.instance.signInAnonymously().catchError((error) {
       errorEx = error;
       print(getMessageFromErrorCode(errorEx.code) +
           ":" +
@@ -245,7 +257,7 @@ class AuthManager extends ChangeNotifier {
 
   Future<AuthResponse> twitterSignInOnMobile() async {
     assert(consumerKey != null && consumerSecretKey != null,
-        " Please call  setTwitterConsumerKeys() before using twitter SignIn.");
+    " Please call  setTwitterConsumerKeys() before using twitter SignIn.");
 
     FirebaseAuthException errorEx;
     NoSuchMethodError exception;
@@ -399,7 +411,7 @@ class AuthManager extends ChangeNotifier {
       return AuthResponse(Status.Failed, "empty field", "-1");
 
     ConfirmationResult confirmationResult =
-        await auth.signInWithPhoneNumber(number).catchError((error) {
+    await auth.signInWithPhoneNumber(number).catchError((error) {
       errorEx = error;
       print(error);
     });
@@ -421,7 +433,7 @@ class AuthManager extends ChangeNotifier {
     }
 
     UserCredential userCredential =
-        await _confirmationResult.confirm(code).catchError((error) {
+    await _confirmationResult.confirm(code).catchError((error) {
       errorEx = error;
       print(error);
     });
@@ -571,7 +583,7 @@ class AuthManager extends ChangeNotifier {
         verificationId: _verificationId, smsCode: code);
 
     UserCredential result =
-        await this.auth.signInWithCredential(credential).catchError((error) {
+    await this.auth.signInWithCredential(credential).catchError((error) {
       errorEx = error;
       verifyErrorMobile = true;
     });
@@ -593,7 +605,7 @@ class AuthManager extends ChangeNotifier {
 
     UserCredential credential = await user
         .linkWithCredential(
-            EmailAuthProvider.credential(email: mail, password: pass))
+        EmailAuthProvider.credential(email: mail, password: pass))
         .catchError((error) {
       errorEx = error;
       print(error);
@@ -623,8 +635,8 @@ class AuthManager extends ChangeNotifier {
 
     UserCredential credential = await user
         .linkWithCredential(PhoneAuthProvider.credential(
-            verificationId: _confirmationResult.verificationId,
-            smsCode: smsCode))
+        verificationId: _confirmationResult.verificationId,
+        smsCode: smsCode))
         .catchError((error) {
       errorEx = error;
       print(error);
@@ -661,7 +673,7 @@ class AuthManager extends ChangeNotifier {
     } else {*/
 
     final GoogleSignInAccount googleUser =
-        await GoogleSignIn().signIn().catchError((error) {
+    await GoogleSignIn().signIn().catchError((error) {
       errorEx = error;
       print(error);
     });
@@ -670,7 +682,7 @@ class AuthManager extends ChangeNotifier {
       return AuthResponse(Status.Failed, errorEx.message, errorEx.code);
 
     final GoogleSignInAuthentication googleAuth =
-        await googleUser.authentication;
+    await googleUser.authentication;
 
     credentialG = GoogleAuthProvider.credential(
       accessToken: googleAuth.accessToken,
@@ -679,7 +691,7 @@ class AuthManager extends ChangeNotifier {
     //}
 
     UserCredential credential =
-        await user.linkWithCredential(credentialG).catchError((error) {
+    await user.linkWithCredential(credentialG).catchError((error) {
       errorEx = error;
       print(error);
     });
@@ -758,13 +770,13 @@ class AuthManager extends ChangeNotifier {
     var errorEx;
     await  reloadUser();
 
-     if (user == null)
-       return AuthResponse(Status.Failed, "There is no User.");
+    if (user == null)
+      return AuthResponse(Status.Failed, "There is no User.");
 
     await user.delete().catchError((error) {
-       errorEx = error;
-       print(error);
-     });
+      errorEx = error;
+      print(error);
+    });
 
     if (errorEx != null)
       return AuthResponse(Status.Failed, errorEx.message, errorEx.code);
@@ -784,7 +796,7 @@ class AuthManager extends ChangeNotifier {
       return AuthResponse(Status.Failed, "You Don't Have Email.");
 
 
-  await  user.sendEmailVerification().catchError((error) {
+    await  user.sendEmailVerification().catchError((error) {
       errorEx = error;
       print(error);
     });
@@ -795,7 +807,7 @@ class AuthManager extends ChangeNotifier {
     await reloadUser();
 
     reSignWithCredential();
-    
+
     notifyListeners();
     return AuthResponse(Status.Successed, "Successed.");
 
@@ -835,7 +847,7 @@ class AuthManager extends ChangeNotifier {
     if (errorEx != null)
       return AuthResponse(Status.Failed, errorEx.message, errorEx.code);
 
-     user= temp.user;
+    user= temp.user;
     notifyListeners();
     return AuthResponse(Status.Successed, "Successed.");
 
