@@ -8,5 +8,5 @@
 * Initializer fix.
 ## [0.0.31] -
 * Initializer fix.
-## [0.0.4] -
+## [0.0.40] -
 * Dependencies updated.
