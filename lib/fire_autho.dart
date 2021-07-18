@@ -8,8 +8,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 export 'fire_autho.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_twitter_login/flutter_twitter_login.dart';
+
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:tw_login/tw_login.dart';
 
 /// AuthManager class helps to creating and managing Firebase Auth user.
 /// Supported platforms: Android ,IOS , Web
