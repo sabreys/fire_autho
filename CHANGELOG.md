@@ -10,3 +10,5 @@
 * Initializer fix.
 ## [0.0.40] -
 * Dependencies updated.
+## [0.0.42] -
+* Ios pod error fixed.
