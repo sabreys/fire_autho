@@ -1,6 +1,6 @@
 library fire_autho;
 
-import 'package:firebase_auth_oauth/firebase_auth_oauth.dart';
+//import 'package:firebase_auth_oauth/firebase_auth_oauth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -741,62 +741,62 @@ class AuthManager extends ChangeNotifier {
     return AuthResponse(Status.Successed, "Successed.");
   }
 
-  Future<AuthResponse> linkCredentialWithTwitter() async {
-    var errorEx;
-    var errorEx2;
-    AuthCredential twitterAuthCredential;
-
-    if (auth == null || user == null) {
-      return AuthResponse(Status.Failed, "There is no user. Please Login.");
-    }
-
-    final TwitterLogin twitterLogin = new TwitterLogin(
-      consumerKey: consumerKey,
-      consumerSecret: consumerSecretKey,
-    );
-
-    if (kIsWeb) {
-      User tempUser = await FirebaseAuthOAuth().linkExistingUserWithCredentials(
-          "twitter.com", ["email"], {"locale": localeInfo}).catchError((error) {
-        errorEx = error;
-        print(error);
-      });
-
-      if (errorEx != null) {
-        return AuthResponse(Status.Failed, errorEx.message);
-      }
-
-      user = tempUser;
-      notifyListeners();
-
-      return AuthResponse(Status.Successed, "Successed.");
-    } else {
-      try {
-        final TwitterLoginResult loginResult = await twitterLogin.authorize();
-
-        final TwitterSession twitterSession = loginResult.session;
-
-        twitterAuthCredential = TwitterAuthProvider.credential(
-            accessToken: twitterSession.token, secret: twitterSession.secret);
-      } catch (e) {
-        errorEx2 = e;
-        print(":::" + e.toString());
-      }
-    }
-
-    UserCredential credential = await user
-        .linkWithCredential(twitterAuthCredential)
-        .catchError((error) {
-      errorEx = error;
-      print(error);
-    });
-
-    if (errorEx != null) return AuthResponse(Status.Failed, errorEx.message);
-
-    user = credential.user;
-
-    return AuthResponse(Status.Successed, "Successed.");
-  }
+  // Future<AuthResponse> linkCredentialWithTwitter() async {
+  //   var errorEx;
+  //   var errorEx2;
+  //   AuthCredential twitterAuthCredential;
+  //
+  //   if (auth == null || user == null) {
+  //     return AuthResponse(Status.Failed, "There is no user. Please Login.");
+  //   }
+  //
+  //   final TwitterLogin twitterLogin = new TwitterLogin(
+  //     consumerKey: consumerKey,
+  //     consumerSecret: consumerSecretKey,
+  //   );
+  //
+  //   if (kIsWeb) {
+  //     User tempUser = await FirebaseAuthOAuth().linkExistingUserWithCredentials(
+  //         "twitter.com", ["email"], {"locale": localeInfo}).catchError((error) {
+  //       errorEx = error;
+  //       print(error);
+  //     });
+  //
+  //     if (errorEx != null) {
+  //       return AuthResponse(Status.Failed, errorEx.message);
+  //     }
+  //
+  //     user = tempUser;
+  //     notifyListeners();
+  //
+  //     return AuthResponse(Status.Successed, "Successed.");
+  //   } else {
+  //     try {
+  //       final TwitterLoginResult loginResult = await twitterLogin.authorize();
+  //
+  //       final TwitterSession twitterSession = loginResult.session;
+  //
+  //       twitterAuthCredential = TwitterAuthProvider.credential(
+  //           accessToken: twitterSession.token, secret: twitterSession.secret);
+  //     } catch (e) {
+  //       errorEx2 = e;
+  //       print(":::" + e.toString());
+  //     }
+  //   }
+  //
+  //   UserCredential credential = await user
+  //       .linkWithCredential(twitterAuthCredential)
+  //       .catchError((error) {
+  //     errorEx = error;
+  //     print(error);
+  //   });
+  //
+  //   if (errorEx != null) return AuthResponse(Status.Failed, errorEx.message);
+  //
+  //   user = credential.user;
+  //
+  //   return AuthResponse(Status.Successed, "Successed.");
+  // }
 
   Future<AuthResponse> deleteUser() async {
     var errorEx;

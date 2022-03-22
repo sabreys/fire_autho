@@ -12,3 +12,6 @@
 * Dependencies updated.
 ## [0.0.42] -
 * Ios pod error fixed.
+## [0.0.51] -
+* Removed firebase_auth_oauth library. error: no such module 'FirebaseAuth'
+* Login with twitter is removed.
