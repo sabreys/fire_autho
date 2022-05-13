@@ -10,7 +10,8 @@ export 'fire_autho.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:tw_login/tw_login.dart';
+
+
 
 /// AuthManager class helps to creating and managing Firebase Auth user.
 /// Supported platforms: Android ,IOS , Web
@@ -24,22 +25,22 @@ class AuthManager extends ChangeNotifier {
 
   String localeInfo = "tr";
 
-  User user;
-  FirebaseAuth auth;
+  User? user;
+  FirebaseAuth? auth;
   Persistence persistenceState = Persistence.LOCAL;
   bool phoneCodeListen = false;
-  String phoneCode;
+  String? phoneCode;
   static const PHONE_VERIFY_DELAY = 20;
   bool indicatorOn = false;
-  String _verificationId;
-  ConfirmationResult _confirmationResult;
+  String? _verificationId;
+  ConfirmationResult? _confirmationResult;
   bool verifyErrorMobile = false;
-  GoogleSignInAuthentication googleAuth;
+  late GoogleSignInAuthentication googleAuth;
 
-  AuthCredential _credential;
-  AuthCredential _googleCredential;
-  String consumerKey;
-  String consumerSecretKey;
+  AuthCredential? _credential;
+  AuthCredential? _googleCredential;
+  String? consumerKey;
+  String? consumerSecretKey;
 
   bool _initialized = false;
 
@@ -81,29 +82,29 @@ class AuthManager extends ChangeNotifier {
       return;
     }
     print("logging out...");
-    await auth.signOut().whenComplete(() {
+    await auth!.signOut().whenComplete(() {
       user = null;
       notifyListeners();
     });
   }
 
   /// Listen for user changes.
-  Stream<User> get onAuthStateChanged => auth.authStateChanges();
+  Stream<User?> get onAuthStateChanged => auth!.authStateChanges();
 
   Future<AuthResponse> signInAnonymous() async {
-    FirebaseAuthException errorEx;
+    FirebaseAuthException? errorEx;
 
     UserCredential userCredential =
         await FirebaseAuth.instance.signInAnonymously().catchError((error) {
       errorEx = error;
-      print(getMessageFromErrorCode(errorEx.code) +
+      print(getMessageFromErrorCode(errorEx!.code) +
           ":" +
           error.toString() +
           ":" +
           error.code);
     });
     if (errorEx != null) {
-      return AuthResponse(Status.Failed, errorEx.message, errorEx.code);
+      return AuthResponse(Status.Failed, errorEx!.message, errorEx!.code);
     }
     user = userCredential.user;
     notifyListeners();
@@ -114,20 +115,20 @@ class AuthManager extends ChangeNotifier {
   }
 
   Future<AuthResponse> signInWithMailPass(String mail, String pass) async {
-    FirebaseAuthException errorEx;
+    FirebaseAuthException? errorEx;
 
     UserCredential userCredential = await FirebaseAuth.instance
         .signInWithEmailAndPassword(email: mail, password: pass)
         .catchError((error) {
       errorEx = error;
-      print(getMessageFromErrorCode(errorEx.code) +
+      print(getMessageFromErrorCode(errorEx!.code) +
           ":" +
           error.toString() +
           ":" +
           error.code);
     });
     if (errorEx != null) {
-      return AuthResponse(Status.Failed, errorEx.message, errorEx.code);
+      return AuthResponse(Status.Failed, errorEx!.message, errorEx!.code);
     }
     user = userCredential.user;
     notifyListeners();
@@ -141,19 +142,19 @@ class AuthManager extends ChangeNotifier {
   }
 
   Future<AuthResponse> signUpWithMailPass(String mail, String pass) async {
-    FirebaseAuthException errorEx;
-    UserCredential userCredential = await auth
+    FirebaseAuthException? errorEx;
+    UserCredential userCredential = await auth!
         .createUserWithEmailAndPassword(email: mail, password: pass)
         .catchError((error) {
       errorEx = error;
-      print(getMessageFromErrorCode(errorEx.code) +
+      print(getMessageFromErrorCode(errorEx!.code) +
           ":" +
           error.toString() +
           ":" +
           error.code);
     });
     if (errorEx != null) {
-      return AuthResponse(Status.Failed, errorEx.message, errorEx.code);
+      return AuthResponse(Status.Failed, errorEx!.message, errorEx!.code);
     }
     user = userCredential.user;
     notifyListeners();
@@ -187,7 +188,7 @@ class AuthManager extends ChangeNotifier {
 
   /// call signInWithGoogle() instead.
   Future<AuthResponse> googleSignInOnWeb() async {
-    FirebaseAuthException errorEx;
+    FirebaseAuthException? errorEx;
 
     GoogleAuthProvider googleProvider = GoogleAuthProvider();
 
@@ -201,7 +202,7 @@ class AuthManager extends ChangeNotifier {
       errorEx = error;
     });
     if (errorEx != null)
-      return AuthResponse(Status.Failed, errorEx.message, errorEx.code);
+      return AuthResponse(Status.Failed, errorEx!.message, errorEx!.code);
     _googleCredential = temp.credential;
     _credential = temp.credential;
     user = temp.user;
@@ -211,9 +212,9 @@ class AuthManager extends ChangeNotifier {
 
   /// call signInWithGoogle() instead.
   Future<AuthResponse> googleSignInOnMobile() async {
-    FirebaseAuthException errorEx;
-    GoogleSignInAccount googleUser;
-    PlatformException error;
+    FirebaseAuthException? errorEx;
+    GoogleSignInAccount? googleUser;
+    PlatformException? error;
     try {
       googleUser = await GoogleSignIn().signIn();
     } catch (e) {
@@ -227,111 +228,112 @@ class AuthManager extends ChangeNotifier {
     final GoogleAuthCredential credential = GoogleAuthProvider.credential(
       accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,
-    );
+    ) as GoogleAuthCredential;
 
     UserCredential credential2 = await FirebaseAuth.instance
         .signInWithCredential(credential)
         .catchError((error) {
       errorEx = error;
-      print(getMessageFromErrorCode(errorEx.code) +
+      print(getMessageFromErrorCode(errorEx!.code) +
           ":" +
           error.toString() +
           ":" +
           error.code);
     });
     if (errorEx != null)
-      return AuthResponse(Status.Failed, errorEx.message, errorEx.code);
+      return AuthResponse(Status.Failed, errorEx!.message, errorEx!.code);
     _credential = credential;
     _googleCredential = credential;
     user = credential2.user;
     return AuthResponse(Status.Successed, "successed.");
   }
 
-  /// be sure twitter token is not null. call setTwitterConsumerKeys on starting.
-  Future<AuthResponse> signInWithTwitter() async {
-    if (kIsWeb) {
-      // detect platform
-      return await twitterSignInOnWeb();
-    } else {
-      return await twitterSignInOnMobile();
-    }
-  }
+  // /// be sure twitter token is not null. call setTwitterConsumerKeys on starting.
+  // Future<AuthResponse> signInWithTwitter() async {
+  //   if (kIsWeb) {
+  //     // detect platform
+  //     return await twitterSignInOnWeb();
+  //   } else {
+  //     return await twitterSignInOnMobile();
+  //   }
+  // }
+  //
+  // /// call signInWithTwitter()  instead.
+  // Future<AuthResponse> twitterSignInOnWeb() async {
+  //   FirebaseAuthException errorEx;
+  //
+  //   TwitterAuthProvider twitterProvider = TwitterAuthProvider();
+  //
+  //   UserCredential temp = await FirebaseAuth.instance
+  //       .signInWithPopup(twitterProvider)
+  //       .catchError((error) {
+  //     errorEx = error;
+  //     print(error);
+  //   });
+  //   if (errorEx != null)
+  //     return AuthResponse(Status.Failed, errorEx.message, errorEx.code);
+  //   _credential = temp.credential;
+  //   user = temp.user;
+  //   return AuthResponse(Status.Successed, "successful.");
+  // }
 
-  /// call signInWithTwitter()  instead.
-  Future<AuthResponse> twitterSignInOnWeb() async {
-    FirebaseAuthException errorEx;
-
-    TwitterAuthProvider twitterProvider = TwitterAuthProvider();
-
-    UserCredential temp = await FirebaseAuth.instance
-        .signInWithPopup(twitterProvider)
-        .catchError((error) {
-      errorEx = error;
-      print(error);
-    });
-    if (errorEx != null)
-      return AuthResponse(Status.Failed, errorEx.message, errorEx.code);
-    _credential = temp.credential;
-    user = temp.user;
-    return AuthResponse(Status.Successed, "successful.");
-  }
-
-  /// call signInWithTwitter()  instead.
-  Future<AuthResponse> twitterSignInOnMobile() async {
-    assert(consumerKey != null && consumerSecretKey != null,
-        " Please call  setTwitterConsumerKeys() before using twitter SignIn.");
-
-    FirebaseAuthException errorEx;
-    NoSuchMethodError exception;
-
-    final TwitterLogin twitterLogin = new TwitterLogin(
-      consumerKey: consumerKey,
-      consumerSecret: consumerSecretKey,
-    );
-    AuthCredential twitterAuthCredential;
-
-    try {
-      final TwitterLoginResult loginResult = await twitterLogin.authorize();
-
-      final TwitterSession twitterSession = loginResult.session;
-
-      twitterAuthCredential = TwitterAuthProvider.credential(
-          accessToken: twitterSession.token, secret: twitterSession.secret);
-    } catch (e) {
-      exception = e;
-      print(e.toString());
-    }
-    if (exception != null)
-      return (AuthResponse(Status.Failed, exception.toString()));
-    if (twitterAuthCredential == null)
-      return (AuthResponse(Status.Failed, "fail."));
-
-    UserCredential credential2 = await FirebaseAuth.instance
-        .signInWithCredential(twitterAuthCredential)
-        .catchError((error) {
-      errorEx = error;
-      print(getMessageFromErrorCode(errorEx.code) +
-          ":" +
-          error.toString() +
-          ":" +
-          error.code);
-    });
-    if (errorEx != null)
-      return AuthResponse(Status.Failed, errorEx.message, errorEx.code);
-    _credential = twitterAuthCredential;
-    user = credential2.user;
-    return AuthResponse(Status.Successed, "successed.");
-  }
+  // /// call signInWithTwitter()  instead.
+  // Future<AuthResponse> twitterSignInOnMobile() async {
+  //   assert(consumerKey != null && consumerSecretKey != null,
+  //       " Please call  setTwitterConsumerKeys() before using twitter SignIn.");
+  //
+  //   FirebaseAuthException errorEx;
+  //   NoSuchMethodError exception;
+  //
+  //   final TwitterLogin twitterLogin = new TwitterLogin(
+  //     apiKey: consumerKey,
+  //     apiSecretKey: consumerSecretKey,
+  //     redirectURI:
+  //   );
+  //   AuthCredential twitterAuthCredential;
+  //
+  //   try {
+  //     final TwitterLoginResult loginResult = await twitterLogin.authorize();
+  //
+  //     final TwitterSession twitterSession = loginResult.session;
+  //
+  //     twitterAuthCredential = TwitterAuthProvider.credential(
+  //         accessToken: twitterSession.token, secret: twitterSession.secret);
+  //   } catch (e) {
+  //     exception = e;
+  //     print(e.toString());
+  //   }
+  //   if (exception != null)
+  //     return (AuthResponse(Status.Failed, exception.toString()));
+  //   if (twitterAuthCredential == null)
+  //     return (AuthResponse(Status.Failed, "fail."));
+  //
+  //   UserCredential credential2 = await FirebaseAuth.instance
+  //       .signInWithCredential(twitterAuthCredential)
+  //       .catchError((error) {
+  //     errorEx = error;
+  //     print(getMessageFromErrorCode(errorEx.code) +
+  //         ":" +
+  //         error.toString() +
+  //         ":" +
+  //         error.code);
+  //   });
+  //   if (errorEx != null)
+  //     return AuthResponse(Status.Failed, errorEx.message, errorEx.code);
+  //   _credential = twitterAuthCredential;
+  //   user = credential2.user;
+  //   return AuthResponse(Status.Successed, "successed.");
+  // }
 
   /// it will send a link to mail for reset password directly.
-  Future<AuthResponse> sendPasswordResetEmail(String email) async {
+  Future<AuthResponse?> sendPasswordResetEmail(String email) async {
     var errorEx;
-    AuthResponse response;
+    AuthResponse? response;
 
     if (email == null || email == "")
       return AuthResponse(Status.Failed, "Empty Mail.");
 
-    await auth.sendPasswordResetEmail(email: email).catchError((error) {
+    await auth!.sendPasswordResetEmail(email: email).catchError((error) {
       errorEx = error;
     }).whenComplete(() {
       response = AuthResponse(
@@ -367,16 +369,16 @@ class AuthManager extends ChangeNotifier {
   }
 
   /// it returns current user
-  User checkIsUserExist() {
-    if (auth != null && auth.currentUser != null) {
-      return auth.currentUser;
+  User? checkIsUserExist() {
+    if (auth != null && auth!.currentUser != null) {
+      return auth!.currentUser;
     }
     return null;
   }
 
   /// listen user changes and change user field. don't call this
   void listenUser() async {
-    auth.authStateChanges().listen((user) {
+    auth!.authStateChanges().listen((user) {
       this.user = user;
       print("Listen user: user changed.");
       notifyListeners();
@@ -436,18 +438,18 @@ class AuthManager extends ChangeNotifier {
 
   /// this method returns waiting response. if you call this, you need to call veriftPhoneSignForWeb after.
   Future<AuthResponse> phoneSignInOnWeb(String number) async {
-    FirebaseAuthException errorEx;
+    FirebaseAuthException? errorEx;
 
     if (number == null || number == "")
       return AuthResponse(Status.Failed, "empty field", "-1");
 
     ConfirmationResult confirmationResult =
-        await auth.signInWithPhoneNumber(number).catchError((error) {
+        await auth!.signInWithPhoneNumber(number).catchError((error) {
       errorEx = error;
       print(error);
     });
     if (errorEx != null)
-      return AuthResponse(Status.Failed, errorEx.message, errorEx.code);
+      return AuthResponse(Status.Failed, errorEx!.message, errorEx!.code);
 
     phoneCodeListen = true;
 
@@ -458,19 +460,19 @@ class AuthManager extends ChangeNotifier {
 
   /// complete verification for sign in. call this with sms code
   Future<AuthResponse> verifyPhoneSignForWeb(String code) async {
-    FirebaseAuthException errorEx;
+    FirebaseAuthException? errorEx;
 
     if (_confirmationResult == null || code == null || code == "") {
       return AuthResponse(Status.Failed, "Please Sign in before verification.");
     }
 
     UserCredential userCredential =
-        await _confirmationResult.confirm(code).catchError((error) {
+        await _confirmationResult!.confirm(code).catchError((error) {
       errorEx = error;
       print(error);
     });
     if (errorEx != null)
-      return AuthResponse(Status.Failed, errorEx.message, errorEx.code);
+      return AuthResponse(Status.Failed, errorEx!.message, errorEx!.code);
 
     user = userCredential.user;
     _credential = userCredential.credential;
@@ -481,16 +483,16 @@ class AuthManager extends ChangeNotifier {
   /// this method returns waiting response. if you call this, you need to call veriftPhoneSign after.
   Future<AuthResponse> phoneSignInOnMobile(
       String number, BuildContext context) async {
-    FirebaseAuthException errorEx;
+    FirebaseAuthException? errorEx;
 
     PhoneVerificationCompleted verificationCompleted =
         (PhoneAuthCredential phoneAuthCredential) async {
       UserCredential temp = await this
-          .auth
+          .auth!
           .signInWithCredential(phoneAuthCredential)
           .catchError((error) {
         errorEx = error;
-        print(getMessageFromErrorCode(errorEx.code) +
+        print(getMessageFromErrorCode(errorEx!.code) +
             ":" +
             error.toString() +
             ":" +
@@ -503,14 +505,14 @@ class AuthManager extends ChangeNotifier {
     PhoneVerificationFailed verificationFailed = (FirebaseAuthException e) {
       errorEx = e;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Failed:" + e.message),
+        content: Text("Failed:" + e.message!),
       ));
       if (e.code == 'invalid-phone-number') {
         print('The provided phone number is not valid.');
       }
     };
     PhoneCodeSent codeSent =
-        (String verificationId, [int forceResendingToken]) async {
+        (String verificationId, [int? forceResendingToken]) async {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Please check your phone for the verification code.'),
       ));
@@ -575,7 +577,7 @@ class AuthManager extends ChangeNotifier {
       );
     };*/
 
-    await auth
+    await auth!
         .verifyPhoneNumber(
       phoneNumber: number,
       verificationCompleted: verificationCompleted,
@@ -588,7 +590,7 @@ class AuthManager extends ChangeNotifier {
     )
         .catchError((error) {
       errorEx = error;
-      print(getMessageFromErrorCode(errorEx.code) +
+      print(getMessageFromErrorCode(errorEx!.code) +
           ":" +
           error.toString() +
           ":" +
@@ -596,7 +598,7 @@ class AuthManager extends ChangeNotifier {
     });
 
     if (errorEx != null || verifyErrorMobile) {
-      return AuthResponse(Status.Failed, errorEx.message, errorEx.code);
+      return AuthResponse(Status.Failed, errorEx!.message, errorEx!.code);
     }
 
     return AuthResponse(Status.Successed, "Successed.");
@@ -605,7 +607,7 @@ class AuthManager extends ChangeNotifier {
   /// complete verification for sign in. call this with sms code
   Future<AuthResponse> verifyPhoneSign(
       BuildContext context, String code) async {
-    FirebaseAuthException errorEx;
+    FirebaseAuthException? errorEx;
 
     if (code == null ||
         code == "" ||
@@ -614,16 +616,16 @@ class AuthManager extends ChangeNotifier {
       return AuthResponse(Status.Failed, "Please Sign in before verification.");
 
     AuthCredential credential = PhoneAuthProvider.credential(
-        verificationId: _verificationId, smsCode: code);
+        verificationId: _verificationId!, smsCode: code);
 
     UserCredential result =
-        await this.auth.signInWithCredential(credential).catchError((error) {
+        await this.auth!.signInWithCredential(credential).catchError((error) {
       errorEx = error;
       verifyErrorMobile = true;
     });
 
     if (errorEx != null || verifyErrorMobile) {
-      return AuthResponse(Status.Failed, errorEx.message, errorEx.code);
+      return AuthResponse(Status.Failed, errorEx!.message, errorEx!.code);
     }
     _credential = credential;
     return AuthResponse(Status.Successed, "Successed.");
@@ -637,7 +639,7 @@ class AuthManager extends ChangeNotifier {
       return AuthResponse(Status.Failed, "There is no user. Please Login.");
     }
 
-    UserCredential credential = await user
+    UserCredential credential = await user!
         .linkWithCredential(
             EmailAuthProvider.credential(email: mail, password: pass))
         .catchError((error) {
@@ -669,9 +671,9 @@ class AuthManager extends ChangeNotifier {
   Future<AuthResponse> verifyLinkCredentialWithPhone(String smsCode) async {
     var errorEx;
 
-    UserCredential credential = await user
+    UserCredential credential = await user!
         .linkWithCredential(PhoneAuthProvider.credential(
-            verificationId: _confirmationResult.verificationId,
+            verificationId: _confirmationResult!.verificationId,
             smsCode: smsCode))
         .catchError((error) {
       errorEx = error;
@@ -708,7 +710,7 @@ class AuthManager extends ChangeNotifier {
               .credential;
     } else {*/
 
-    final GoogleSignInAccount googleUser =
+    final GoogleSignInAccount? googleUser =
         await GoogleSignIn().signIn().catchError((error) {
       errorEx = error;
       print(error);
@@ -718,7 +720,7 @@ class AuthManager extends ChangeNotifier {
       return AuthResponse(Status.Failed, errorEx.message, errorEx.code);
 
     final GoogleSignInAuthentication googleAuth =
-        await googleUser.authentication;
+        await googleUser!.authentication;
 
     credentialG = GoogleAuthProvider.credential(
       accessToken: googleAuth.accessToken,
@@ -727,7 +729,7 @@ class AuthManager extends ChangeNotifier {
     //}
 
     UserCredential credential =
-        await user.linkWithCredential(credentialG).catchError((error) {
+        await user!.linkWithCredential(credentialG).catchError((error) {
       errorEx = error;
       print(error);
     });
@@ -804,7 +806,7 @@ class AuthManager extends ChangeNotifier {
 
     if (user == null) return AuthResponse(Status.Failed, "There is no User.");
 
-    await user.delete().catchError((error) {
+    await user!.delete().catchError((error) {
       errorEx = error;
       print(error);
     });
@@ -820,12 +822,12 @@ class AuthManager extends ChangeNotifier {
     var errorEx;
 
     if (user == null) return AuthResponse(Status.Failed, "There is no User.");
-    if (user.emailVerified)
+    if (user!.emailVerified)
       return AuthResponse(Status.Failed, "Already Verified.");
-    if (user.isAnonymous)
+    if (user!.isAnonymous)
       return AuthResponse(Status.Failed, "You Don't Have Email.");
 
-    await user.sendEmailVerification().catchError((error) {
+    await user!.sendEmailVerification().catchError((error) {
       errorEx = error;
       print(error);
     });
@@ -848,7 +850,7 @@ class AuthManager extends ChangeNotifier {
 
     if (user == null) return AuthResponse(Status.Failed, "There is no User.");
 
-    await user.reload().catchError((error) {
+    await user!.reload().catchError((error) {
       errorEx = error;
       print(error);
     });
@@ -867,8 +869,8 @@ class AuthManager extends ChangeNotifier {
     if (user == null || _credential == null)
       return AuthResponse(Status.Failed, "There is no User.");
 
-    UserCredential temp = await user
-        .reauthenticateWithCredential(_credential)
+    UserCredential temp = await user!
+        .reauthenticateWithCredential(_credential!)
         .catchError((error) {
       errorEx = error;
       print(error);
@@ -939,8 +941,8 @@ enum UserTypes {
 ///status variable is required.
 class AuthResponse {
   Status status;
-  String message = "";
-  String code = "";
+  String? message = "";
+  String? code = "";
 
   AuthResponse(this.status, this.message, [this.code]);
 }

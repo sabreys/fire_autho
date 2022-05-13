@@ -92,7 +92,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 buildAnonSignIn(),
                 buildLogOut(),
                 buildGoogleSignIn(),
-                buildTwitterSignIn(),
                 buildPhoneInput(),
                 buildResetMailSection(),
                 buildVerificationInput(),
@@ -113,7 +112,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 buildLinkPhoneAuth(),
                 buildVerifyLinkPhoneAuth(),
                 buildLinkGoogleAuth(),
-                buildLinkTwitterAuth(),
                 buildDeleteButton(),
                 buildVerificationMailButton(),
                 buildReloadButton(),
@@ -274,18 +272,18 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget buildTwitterSignIn() {
-    return CustomRaisedButton(
-      child: Text("Sign in with Twitter"),
-      onPressed: () async {
-        AuthResponse response = await widget.manager.signInWithTwitter();
-        if (response.status == Status.Failed) {
-          showSnack(response);
-        }
-        widget.manager.printAuthStats();
-      },
-    );
-  }
+  // Widget buildTwitterSignIn() {
+  //   return CustomRaisedButton(
+  //     child: Text("Sign in with Twitter"),
+  //     onPressed: () async {
+  //       AuthResponse response = await widget.manager.signInWithTwitter();
+  //       if (response.status == Status.Failed) {
+  //         showSnack(response);
+  //       }
+  //       widget.manager.printAuthStats();
+  //     },
+  //   );
+  // }
 
   Widget buildPhoneInput() {
     return Padding(
@@ -423,19 +421,19 @@ class _MyHomePageState extends State<MyHomePage> {
         },
         child: Text("Link Google Account"));
   }
-
-  Widget buildLinkTwitterAuth() {
-    return CustomRaisedButton(
-        onPressed: () async {
-          AuthResponse response =
-              await widget.manager.linkCredentialWithTwitter();
-          widget.manager.printAuthStats();
-          if (response.status == Status.Failed) {
-            showSnack(response);
-          }
-        },
-        child: Text("Link Twitter Account"));
-  }
+  //
+  // Widget buildLinkTwitterAuth() {
+  //   return CustomRaisedButton(
+  //       onPressed: () async {
+  //         AuthResponse response =
+  //             await widget.manager.linkCredentialWithTwitter();
+  //         widget.manager.printAuthStats();
+  //         if (response.status == Status.Failed) {
+  //           showSnack(response);
+  //         }
+  //       },
+  //       child: Text("Link Twitter Account"));
+  // }
 
   Widget buildDeleteButton() {
     return CustomRaisedButton(

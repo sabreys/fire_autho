@@ -15,3 +15,9 @@
 ## [0.0.51] -
 * Removed firebase_auth_oauth library. error: no such module 'FirebaseAuth'
 * Login with twitter is removed.
+## [0.0.52] -
+* Login with twitter is removed.
+## [0.0.53] -
+* Provider upgraded.
+## [1.0.0] -
+* Added Null Safety
