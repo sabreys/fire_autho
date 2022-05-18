@@ -21,3 +21,5 @@
 * Provider upgraded.
 ## [1.0.0] -
 * Added Null Safety
+## [1.0.1] -
+* Dependencies updated.

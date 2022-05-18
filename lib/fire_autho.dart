@@ -218,7 +218,7 @@ class AuthManager extends ChangeNotifier {
     try {
       googleUser = await GoogleSignIn().signIn();
     } catch (e) {
-      error = e;
+      error = e as PlatformException?;
     }
     if (error != null) return (AuthResponse(Status.Failed, error.toString()));
     if (googleUser == null) return (AuthResponse(Status.Failed, "Canceled."));
