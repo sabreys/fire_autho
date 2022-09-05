@@ -1,6 +1,6 @@
 name: fire_autho
 description: Firebase Auth Manager is a provider class for controling Firebase User on Android,Ios and Web.
-version: 1.0.1
+version: 1.0.2
 homepage: https://github.com/sabreys
 
 environment:
