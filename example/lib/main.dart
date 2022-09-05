@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   AuthManager manager =
-      AuthManager(); // Singleton class. initializing  is here.
+  AuthManager(); // Singleton class. initializing  is here.
 
   MyHomePage() {
     //  manager.setTwitterConsumerKeys("consumer_key","consumer_secret_key"); // if you will use twitter sign in. you must call this function.
@@ -51,7 +51,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController _phoneNumberController = TextEditingController();
   final TextEditingController _smsController = TextEditingController();
 
-  String _verificationId;
+  String? _verificationId;
   final SmsAutoFill _autoFill = SmsAutoFill();
 
   @override
@@ -144,7 +144,7 @@ class _MyHomePageState extends State<MyHomePage> {
       child: RaisedButton(
           child: Text("Get current number"),
           onPressed: () async =>
-              {_phoneNumberController.text = await _autoFill.hint},
+          {_phoneNumberController.text = (await _autoFill.hint)!},
           color: Colors.greenAccent[700]),
     );
   }
@@ -155,31 +155,31 @@ class _MyHomePageState extends State<MyHomePage> {
       builder: (context, cart, child) => Stack(
         children: [
           cart.auth != null
-              ? StreamBuilder<User>(
-                  stream: widget.manager.onAuthStateChanged,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.active) {
-                      User user = snapshot.data;
-                      if (user == null) {
-                        return Text("No user");
-                      }
-                      return Padding(
-                        padding: const EdgeInsets.all(30.0),
-                        child: Text("::" + widget.manager.user.toString()),
-                      );
-                    } else {
-                      return SizedBox(
-                        height: 200,
-                        width: 200,
-                        child: Scaffold(
-                          body: Center(
-                            child: CircularProgressIndicator(),
-                          ),
-                        ),
-                      );
-                    }
-                  },
-                )
+              ? StreamBuilder<User?>(
+            stream: widget.manager.onAuthStateChanged,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.active) {
+                User? user = snapshot.data;
+                if (user == null) {
+                  return Text("No user");
+                }
+                return Padding(
+                  padding: const EdgeInsets.all(30.0),
+                  child: Text("::" + widget.manager.user.toString()),
+                );
+              } else {
+                return SizedBox(
+                  height: 200,
+                  width: 200,
+                  child: Scaffold(
+                    body: Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  ),
+                );
+              }
+            },
+          )
               : Text("No No No"),
         ],
       ),
@@ -194,7 +194,7 @@ class _MyHomePageState extends State<MyHomePage> {
         children: [
           userSnap.auth != null
               ? Text(
-                  userSnap.user != null ? userSnap.user.toString() : "No user")
+              userSnap.user != null ? userSnap.user.toString() : "No user")
               : Text("No No No"),
         ],
       ),
@@ -231,7 +231,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void showSnack(AuthResponse response) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text("Failed:" + response.message),
+      content: Text("Failed:" + response.message!),
     ));
   }
 
@@ -254,7 +254,7 @@ class _MyHomePageState extends State<MyHomePage> {
       child: Text("Log out"),
       onPressed: () async {
         await widget.manager.signOut();
-        await widget.manager.printAuthStats();
+
       },
     );
   }
@@ -291,7 +291,7 @@ class _MyHomePageState extends State<MyHomePage> {
       child: TextFormField(
         controller: _phoneNumberController,
         decoration:
-            const InputDecoration(labelText: 'Phone number (+xx xxx-xxx-xxxx)'),
+        const InputDecoration(labelText: 'Phone number (+xx xxx-xxx-xxxx)'),
       ),
     );
   }
@@ -306,16 +306,16 @@ class _MyHomePageState extends State<MyHomePage> {
               _smsController.text;
           if (!kIsWeb) {
             AuthResponse response =
-                await Provider.of<AuthManager>(context, listen: false)
-                    .verifyPhoneSign(context, _smsController.text);
+            await Provider.of<AuthManager>(context, listen: false)
+                .verifyPhoneSign(context, _smsController.text);
 
             if (response.status != Status.Successed) {
               showSnack(response);
             }
           } else {
             AuthResponse response =
-                await Provider.of<AuthManager>(context, listen: false)
-                    .verifyPhoneSignForWeb(_smsController.text);
+            await Provider.of<AuthManager>(context, listen: false)
+                .verifyPhoneSignForWeb(_smsController.text);
             if (response.status != Status.Successed) {
               showSnack(response);
             }
@@ -351,12 +351,12 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           FlatButton(
             onPressed: () async {
-              AuthResponse response =
-                  await Provider.of<AuthManager>(context, listen: false)
-                      .sendPasswordResetEmail(resetFieldController.text);
-              if (response.status != Status.Successed) {
+              AuthResponse? response =
+              await Provider.of<AuthManager>(context, listen: false)
+                  .sendPasswordResetEmail(resetFieldController.text);
+              if (response!.status != Status.Successed) {
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text(":" + response.message),
+                  content: Text(":" + response.message!),
                 ));
               } else {
                 showSnack(response);
@@ -374,7 +374,7 @@ class _MyHomePageState extends State<MyHomePage> {
         onPressed: () async {
           AuthResponse response = await widget.manager
               .linkCredentialWithEmailPass(
-                  mailFieldController.text, passFieldController.text);
+              mailFieldController.text, passFieldController.text);
           widget.manager.printAuthStats();
           if (response.status == Status.Failed) {
             showSnack(response);
@@ -413,7 +413,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return CustomRaisedButton(
         onPressed: () async {
           AuthResponse response =
-              await widget.manager.linkCredentialWithGoogle();
+          await widget.manager.linkCredentialWithGoogle();
           widget.manager.printAuthStats();
           if (response.status == Status.Failed) {
             showSnack(response);
